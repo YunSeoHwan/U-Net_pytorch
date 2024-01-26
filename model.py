@@ -63,14 +63,16 @@ class UNet(nn.Module):
         x = self.bottleneck(x)
         skip_connections = skip_connections[::-1]   # reverse because it uses upsampling
 
-        for idx in range(0, len(self.ups), 2):
+        # only use convTranspose -> 2
+        for idx in range(0, len(self.ups), 2):  
             x = self.ups[idx](x)    # 64, 128, ...
-            skip_connection = skip_connections[idx//2]
-
+            skip_connection = skip_connections[idx//2]  # save concat list
+            
+            # handle pooling problem
             if x.shape != skip_connection.shape:
-                x = TF.resize(x, size=skip_connection.shape[2:])
+                x = TF.resize(x, size=skip_connection.shape[2:])    # adjust (w, h) -> (batch, c, w, h)
                 
-            concat_skip = torch.cat((skip_connection, x), dim=1)
+            concat_skip = torch.cat((skip_connection, x), dim=1)    # dim=1 -> channel dim
             x = self.ups[idx+1](concat_skip)
         
         return self.final_conv(x)
