@@ -73,7 +73,7 @@ class UNet(nn.Module):
                 x = TF.resize(x, size=skip_connection.shape[2:])    # adjust (w, h) -> (batch, c, w, h)
                 
             concat_skip = torch.cat((skip_connection, x), dim=1)    # dim=1 -> channel dim
-            x = self.ups[idx+1](concat_skip)
+            x = self.ups[idx+1](concat_skip)    # Double conv
         
         return self.final_conv(x)
     
